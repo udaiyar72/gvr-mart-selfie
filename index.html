@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GVR MART Selfie</title>
+<style>
+body {
+  margin:0; padding:20px;
+  background:#073d25; color:white;
+  font-family:Arial,sans-serif;
+  text-align:center;
+}
+h1 {color:#f5c542;font-size:32px}
+.card {
+  max-width:420px;margin:auto;
+  background:#105536;padding:18px;
+  border-radius:20px;
+}
+.camera {
+  width:100%;border-radius:15px;
+  background:#062b1b;
+}
+.frame {
+  border:5px solid #e9bd43;
+  border-radius:15px;padding:8px;
+}
+button {
+  background:#e9bd43;color:#073d25;
+  border:0;border-radius:30px;
+  padding:14px 22px;margin:8px;
+  font-size:16px;font-weight:bold;
+}
+#result {width:100%;margin-top:15px;
+border-radius:12px}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>GVR MART</h1>
+<p>SCAN TO SNAP A SELFIE!</p>
+<div class="frame">
+<video id="video" class="camera"
+autoplay playsinline></video>
+</div>
+<button onclick="startCamera()">OPEN CAMERA</button>
+<button onclick="takePhoto()">TAKE SELFIE</button>
+<canvas id="canvas" hidden></canvas>
+<img id="result" hidden>
+<div>
+<button onclick="downloadPhoto()">DOWNLOAD</button>
+<button onclick="sharePhoto()">SHARE</button>
+</div>
+<p>Fresh Fruits & Vegetables ❤️</p>
+<p>Farmer Support | Chennai</p>
+</div>
+<script>
+const video=document.getElementById("video");
+const canvas=document.getElementById("canvas");
+const result=document.getElementById("result");
+let stream;
+
+async function startCamera(){
+ try {
+  stream=await navigator.mediaDevices.getUserMedia({
+   video:{facingMode:"user"},audio:false
+  });
+  video.srcObject=stream;
+ } catch(e) {
+  alert("Camera permission allow pannunga. HTTPS connection use pannunga.");
+ }
+}
+function takePhoto(){
+ if(!stream){alert("First OPEN CAMERA press pannunga");return;}
+ canvas.width=video.videoWidth;
+ canvas.height=video.videoHeight;
+ const ctx=canvas.getContext("2d");
+ ctx.translate(canvas.width,0);
+ ctx.scale(-1,1);
+ ctx.drawImage(video,0,0,canvas.width,canvas.height);
+ ctx.setTransform(1,0,0,1,0,0);
+ ctx.fillStyle="#073d25";
+ ctx.fillRect(0,canvas.height-90,canvas.width,90);
+ ctx.fillStyle="#f5c542";
+ ctx.textAlign="center";
+ ctx.font="bold 42px Arial";
+ ctx.fillText("GVR MART",canvas.width/2,canvas.height-48);
+ ctx.fillStyle="white";
+ ctx.font="22px Arial";
+ ctx.fillText("SCAN • SNAP • SHARE",canvas.width/2,canvas.height-15);
+ result.src=canvas.toDataURL("image/png");
+ result.hidden=false;
+}
+function downloadPhoto(){
+ if(result.hidden){alert("Take selfie first");return;}
+ const a=document.createElement("a");
+ a.href=result.src;a.download="GVR-MART-Selfie.png";a.click();
+}
+async function sharePhoto(){
+ if(result.hidden){alert("Take selfie first");return;}
+ const blob=await (await fetch(result.src)).blob();
+ const file=new File([blob],"GVR-MART-Selfie.png",{type:"image/png"});
+ if(navigator.canShare && navigator.canShare({files:[file]})){
+  await navigator.share({files:[file],title:"My GVR MART Selfie"});
+ } else {
+  downloadPhoto();
+  alert("Photo downloaded. Share it from your gallery!");
+ }
+}
+</script>
+</body>
+</html>
